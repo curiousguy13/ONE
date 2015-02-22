@@ -36,8 +36,6 @@ public class GameRouter extends ActiveRouter {
 
 	/** sumEncounters of total encounters by every node*/
 	private static Map<DTNHost, Integer> sumEncounters;
-	
-	private static Map<DTNHost, Double> gamma;
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -161,13 +159,11 @@ public class GameRouter extends ActiveRouter {
 	
 		Collection<Message> msgCollection = getMessageCollection();
 		
-		this.gamma=new HashMap<DTNHost, Double>();
-		
 		/* for all connected hosts collect all messages that have a higher
 		   gamma(alpha/beta) of delivery by the other host */
 		for (Connection con : getConnections()) { 
 		
-		
+		gamma=new HashMap<DTNHost, Double>();
 
 			DTNHost me = getHost();
 			DTNHost other = con.getOtherNode(getHost());
@@ -244,11 +240,13 @@ public class GameRouter extends ActiveRouter {
 		return tryMessagesForConnected(messages);	// try to send messages
 	}
 
+//NOTE:this is not exactly what we need but it will work for now
+//we need sumDist of ALL the nodes but this returns the sum of nodes whose sumEncounters!=0
 //Returns the sum of all the nodes w.r.t dest
 private double getsumDist(DTNHost dest)
 {
 	double sumDist=0;
-	for(DTNHost n:dest.getHosts()){
+	for(DTNHost n:sumEncounters.keySet()){
 		sumDist+=getDistFor(n,dest);
 	}
 	return sumDist;
