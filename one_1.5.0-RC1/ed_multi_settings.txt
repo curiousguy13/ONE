@@ -7,11 +7,7 @@ Scenario.name = Epidemic_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
 # 43200s == 12h
-<<<<<<< HEAD
-Scenario.endTime = 10000
-=======
 Scenario.endTime = 100000
->>>>>>> Threshold_Calculation
 
 
 ## Interface-specific settings:
@@ -57,15 +53,9 @@ Scenario.nrofHostGroups = 1
 
 # Common settings for all groups
 Group.movementModel = ShortestPathMapBasedMovement
-<<<<<<< HEAD
-Group.router = edMultiRouter
-Group.bufferSize = 20M
-Group.waitTime = 0,220
-=======
 Group.router = EpidemicRouter
 Group.bufferSize = 15M
 Group.waitTime = 0,120
->>>>>>> Threshold_Calculation
 # All nodes have the highSpeed interface
 Group.nrofInterfaces = 1
 Group.interface1 = btInterface
