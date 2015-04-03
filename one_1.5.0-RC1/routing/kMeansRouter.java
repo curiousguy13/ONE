@@ -45,7 +45,7 @@ public class kMeansRouter extends ActiveRouter{
 
    public static final String ZEROTHRESHOLD_S = "zerothreshold";
    
-	/** number of encounters of every node with every other node*/
+    /** number of encounters of every node with every other node*/
 	private static int[][] encounters;
 
 	/** sumEncounters of total encounters by every node*/

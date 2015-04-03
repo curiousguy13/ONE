@@ -3,7 +3,7 @@
 #
 
 ## Scenario settings
-Scenario.name = Epidemic_scenario
+Scenario.name = kMeans_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
 # 43200s == 12h
@@ -53,7 +53,7 @@ Scenario.nrofHostGroups = 1
 
 # Common settings for all groups
 Group.movementModel = ShortestPathMapBasedMovement
-Group.router = edMultiRouter
+Group.router = kMeansRouter
 Group.bufferSize = 15M
 Group.waitTime = 0,120
 # All nodes have the highSpeed interface
