@@ -48,9 +48,6 @@ public class kMeansRouter extends ActiveRouter{
     /** number of encounters of every node with every other node*/
 	private static int[][] encounters;
 
-	/** sumEncounters of total encounters by every node*/
-	private static Map<DTNHost, Integer> sumEncounters;
-
 	/**
 	 * Constructor. Creates a new message router based on the settings in
 	 * the given Settings object.
@@ -133,35 +130,18 @@ public class kMeansRouter extends ActiveRouter{
 		if (this.encounters == null) {
 			this.encounters=new int[host1.getHosts().size()][host1.getHosts().size()]; //TODO:replace 126 by hosts.size
 		}
-		if(this.sumEncounters == null){
-			this.sumEncounters=new HashMap<DTNHost, Integer>();
-		}
 		kMeansRouter othRouter = (kMeansRouter)host2.getRouter();
 		kMeansRouter myRouter = (kMeansRouter)host1.getRouter();
 
-		//if sumEncounters does not contain host1 , put host1 in sumEncounters and initialise by 0
-		if(!this.sumEncounters.containsKey(host1))
-		{
-			sumEncounters.put(host1,0);
-		}
-		//if sumEncounters does not contain host1 , put host1 in sumEncounters and initialise by 0
-		if(!this.sumEncounters.containsKey(host2))
-		{
-			sumEncounters.put(host2,0);
-		}
+		
 		if(myRouter!=othRouter)
 		{
 			this.encounters[host1.getAddress()][host2.getAddress()]++;
-
-			//increase the value of sumEncounters of host1 by 1 
-			this.sumEncounters.put(host1,this.sumEncounters.get(host1)+1);
 		}
 		else
 		{
 			this.encounters[host1.getAddress()][host2.getAddress()]++;
 			this.encounters[host2.getAddress()][host1.getAddress()]++;
-			this.sumEncounters.put(host1,this.sumEncounters.get(host1)+1);
-			this.sumEncounters.put(host2,this.sumEncounters.get(host2)+1);
 		}
 		//System.out.println(host1.getAddress()+ " " + sumEncounters.get(host1));
 		//System.out.println(host2.getAddress()+ " " + sumEncounters.get(host2));
@@ -175,21 +155,6 @@ public class kMeansRouter extends ActiveRouter{
 	 */
 	public int getEncounter(DTNHost host1,DTNHost host2){
 		return this.encounters[host1.getAddress()][host2.getAddress()];
-	}
-
-	/**
-	 * Returns the current sumEncounters (S) value for a host
-	 * @param host The host to look the S for
-	 * @return the current S value
-	 */
-	public int getsumEncounters(DTNHost host){
-		if(sumEncounters.containsKey(host))
-		{
-			//System.out.println("poop:"+host.getAddress()+"="+this.sumEncounters.get(host));
-			return this.sumEncounters.get(host);
-		}
-		else
-			return 0;
 	}
 	
 	@Override
@@ -213,8 +178,7 @@ public class kMeansRouter extends ActiveRouter{
 		{
 			tryOtherMessages();	
 		}	 
-		
-		
+			
 	}
 	
 	/**
@@ -230,184 +194,57 @@ public class kMeansRouter extends ActiveRouter{
 		
 		for(Message m : msgCollection){
 
-			//Map<DTNHost, Double> bestGammaWorld = new HashMap<DTNHost, Double>();
-
-			Map<DTNHost, Double> bestGammaLocal = new HashMap<DTNHost, Double>();
-
-			DTNHost dest = m.getTo();
-
-			double threshold;
-			int count=0;
-	        double gammaTotal=0;
-
-
-            //to calculate gamma for the whole network
-            			
-			/*for(DTNHost node : getHost().getHosts()){
-
-				//alpha and beta of the nodes
-				double alphaNode,betaNode,gammaNode;
-
-				//if the sumEncounters of encounters of all other nodes w.r.t destination is 0,
-				//then initialise alphaOther to 0 (prevents divide by zero error)
-				if(getsumEncounters(dest)==0)
-				{
-					alphaNode=0;
-				}
-				else
-				{
-					alphaNode=getEncounter(dest,node)/getsumEncounters(dest);
-				}
-				
-				//beta for otherRouter
-				betaNode=getDistFor(dest,node)/getsumDist(dest);
-
-				gammaNode=alphaNode/betaNode;
-
-				if(gammaNode>=threshold)
-					{bestGammaWorld.put(node,gammaNode);
-					
-					//for printing the values of gamma
-				/*for(Map.Entry<DTNHost, Double> nodenew : bestGammaWorld.entrySet())
-				{
-				System.out.println(nodenew.getKey()); System.out.println(nodenew.getValue());
-				System.out.println("\n");
-				
-								} 
-			} 
-			
-			
-		} */
-			
-			
-			//to calculate the mean gamma for the neighbours
+            DTNHost dest = m.getTo();
+            int noOfFeatures=2;
+            double[][] featureMatrix=new double[getConnections().size()][noOfFeatures];
+            int i=0;
+            //to get the feature matrix of the neighbours.
 			for (Connection con : getConnections()){
 
-				DTNHost me = getHost();
+
+				//DTNHost me = getHost();
 				DTNHost other = con.getOtherNode(getHost());
-				kMeansRouter othRouter = (kMeansRouter)other.getRouter();
+				//kMeansRouter othRouter = (kMeansRouter)other.getRouter();
 				
-				//alpha and beta of otherRouter
-				double alphaOther,betaOther,gammaOther;
-
-				//if the sumEncounters of encounters of all other nodes w.r.t destination is 0,
-				//then initialise alphaOther to 0 (prevents divide by zero error)
-				if(getsumEncounters(dest)==0)
-				{
-					alphaOther=0;
-				}
-				else
-				{   //System.out.println(getEncounter(dest,other));
-					alphaOther=(double) getEncounter(dest,other)/getsumEncounters(dest);
-				}
-				
-				//beta for otherRouter
-				betaOther=getDistFor(dest,other)/getsumDist(dest);
-
-                //System.out.println(alphaOther);
-				gammaOther=alphaOther/betaOther;
-                //System.out.println(gammaOther);
-                
-				gammaTotal+=gammaOther;
-				count++;
-			}
-			
-			//calculation of mean threshold
-			threshold=gammaTotal/count;
-			//System.out.println(threshold);
-		            
-            //to calculate the gamma for the neighbours
-			for (Connection con : getConnections()){
-
-				DTNHost me = getHost();
-				DTNHost other = con.getOtherNode(getHost());
-				kMeansRouter othRouter = (kMeansRouter)other.getRouter();
-				
-				//alpha and beta of otherRouter
-				double alphaOther,betaOther,gammaOther;
-				//alpha and beta of MeRouter
-				double alphaMe,betaMe,gammaMe;
-
-				//if the sumEncounters of encounters of all other nodes w.r.t destination is 0,
-				//then initialise alphaOther to 0 (prevents divide by zero error)
-				if(getsumEncounters(dest)==0)
-				{
-					alphaOther=0;
-					alphaMe=0;
-				}
-				else
-				{
-					alphaOther=(double) getEncounter(dest,other)/getsumEncounters(dest);
-				}
-				
-				//beta for otherRouter
-				betaOther=getDistFor(dest,other)/getsumDist(dest);
-				//beta for MeRouter
-				betaMe=getDistFor(dest,me)/getsumDist(me);
-
-				gammaOther=(double)alphaOther/betaOther;
-				//System.out.println(gammaOther);
-
-				if(gammaOther>threshold)
-					bestGammaLocal.put(other,gammaOther);
+				featureMatrix[i][0]=getEncounter(other,dest);
+				featureMatrix[i][1]=getDistFor(other,dest);
+				i++;
 			}
 
-			//intersection 
-			//Map<DTNHost, Double> intersection = new HashMap<DTNHost, Double>(bestGammaLocal);
-			//intersection.keySet().retainAll(bestGammaWorld.keySet());
-
-			//if intersection is not empty
-			
-			
-			if(!bestGammaLocal.isEmpty()){
-				/*
-				Connection c= new Connection(getHost(),getHost().getInterface(),maxGamma.getKey(),maxGamma.getKey().getInterface());
-				kMeansRouter othRouter = (kMeansRouter)other.getRouter();
-				if(!othRouter.isTransferring())
-				{
-					messages.add(new Tuple<Message, Connection>(m,con));	
-				}
-				*/
-				
-				
-				
-				for(Connection con : getConnections())
-				{
-					DTNHost other=con.getOtherNode(getHost());
-					kMeansRouter othRouter = (kMeansRouter)other.getRouter();
-					if(othRouter.isTransferring()){
-						continue;
-					}
-					if(othRouter.hasMessage(m.getId())){
-						continue;
-					}
-					if(bestGammaLocal.containsKey(other))
-					{
-					   
-       					messages.add(new Tuple<Message, Connection>(m,con));	
-					}
-				}  //end of for loop				
-			}
-			//flooding
-	     else 
+			/*
+			//loop over neighbors for transferring messages
+			for(Connection con : getConnections())
 			{
+				DTNHost other=con.getOtherNode(getHost());
+				kMeansRouter othRouter = (kMeansRouter)other.getRouter();
+				if(othRouter.isTransferring()){
+					continue;
+				}
+				if(othRouter.hasMessage(m.getId())){
+					continue;
+				}
+				if(bestGammaLocal.containsKey(other))
+				{
+				   
+       				messages.add(new Tuple<Message, Connection>(m,con));	
+				}
+			}  //end of for loop				
+			*/
+
+			//flooding
 			for(Connection con : getConnections())
 				{
 					DTNHost other=con.getOtherNode(getHost());
-					kMeansRouter othRouter = (kMeansRouter)other.getRouter();
+					edMultiRouter othRouter = (edMultiRouter)other.getRouter();
 					if(othRouter.isTransferring()){
 						continue;
 					}
 					if(othRouter.hasMessage(m.getId())){
 						continue;
 					}
-						messages.add(new Tuple<Message, Connection>(m,con));	
-				} 
-			
-			
-			}  //end of else 
+					messages.add(new Tuple<Message, Connection>(m,con));	
+				} 		
 		}
-		
 		if (messages.size() == 0) {
 			return null;
 		}
@@ -417,16 +254,128 @@ public class kMeansRouter extends ActiveRouter{
 		return tryMessagesForConnected(messages);	// try to send messages
 	}
 
-//Returns the sum of all the nodes w.r.t dest
-private double getsumDist(DTNHost dest)
+
+private Map kMeans(double[][] featureMatrix,int rows,int columns,int k)
 {
-	double sumDist=0;
-	for(DTNHost n:dest.getHosts()){
-		sumDist+=getDistFor(n,dest);
+	normalize(featureMatrix,rows,columns);
+
+	//let's take the first two neighbours as initial centers
+	int c1=0,c2=1;
+	Map<Int, Double> cluster1 = new HashMap<Int, Double>();
+	Map<Int, Double> cluster2 = new HashMap<Int, Double>();
+
+	//to ensure that k-means doesn't get stuck on a local optima, 
+	//repeat the below process
+	//many times with random initial nodes (NOT IMPLEMENTED YET)
+
+	//repeat the process noOfTimes times
+	int noOfTimes=rows;
+	while(noOfTimes--)
+	{
+		double cluster1Mean=0;
+		double cluster2Mean=0;
+		double distTemp=0;
+		//assigning nodes to clusters
+		for(int i=0;i<rows;i++)
+		{
+			if(i!=c1 && i!=c2)
+			{
+				distTemp=euclideanDist(featureMatrix,rows,columns,i);
+				if(euclideanDist(featureMatrix,rows,columns,i,c1)<euclideanDist(featureMatrix,rows,columns,i,c2))
+				{
+					cluster1.add(i,distTemp);
+					cluster1Mean=cluster1Mean+distTemp;
+				}
+				else
+				{
+					cluster2.add(i,distTemp);
+					cluster2Mean=cluster2Mean+distTemp;
+				}
+			}
+		}
+		cluster1Mean=cluster1Mean/cluster1.size();
+		cluster2Mean=cluster2Mean/cluster2.size();
+		Iterator it1=cluster1.entrySet().iterator();
+		Iterator it2=cluster2.entrySet().iterator();
+
+		//ASSIGNING NEW CENTRES
+		//this can be done faster using a better(sorted) data structure
+		double min=Double.POSITIVE_INFINITY;;
+		while(it1.hasNext())
+		{
+			Map.Entry pair=(Map.Entry)it1.next();
+			if(pair.getValue()-cluster1Mean<min)
+			{
+				c1=pair.getKey()
+			}
+		}
+		min=Double.POSITIVE_INFINITY;	
+
+		while(it2.hasNext())
+		{
+			Map.Entry pair=(Map.Entry)it2.next();
+			if(pair.getValue()-cluster2Mean<min)
+			{
+				c2=pair.getKey()
+			}
+		}
+
+		cluster1.clear();
+		cluster2.clear();
 	}
-	return sumDist;
+
+	//decide which cluster we want and return it
+
 }
 
+//calculates euclidean distance between two nodes
+private double euclideanDist(double[][] featureMatrix,int rows,int columns,int index1,int index2)
+{
+	double sum=0;
+	for(int i=0;i<columns;i++)
+	{
+		sum=sum+Math.pow((featureMatrix[index1][i]-featureMatrix[index2][i]),2);
+	}
+	Math.sqrt(sum);
+}
+
+//calculates euclidean distance of a node
+private double euclideanDist(double[][] featureMatrix,int rows,int columns,int index1)
+{
+	double sum=0;
+	for(int i=0;i<columns;i++)
+	{
+		sum=sum+Math.pow((featureMatrix[index1][i],2);
+	}
+	Math.sqrt(sum);
+}
+
+private void normalize(double[][] featureMatrix,int rows,int columns,int k)
+{
+	double sum,min,max,diff;
+	for(int i=0;i<columns;i++)
+	{
+		sum=0;
+		max=-1;
+		min=Double.POSITIVE_INFINITY;
+		for(int j=0;j<rows;j++)
+		{
+			if(featureMatrix[j][i]>max)
+			{
+				max=featureMatrix[j][i];
+			}
+			if(featureMatrix[j][i]<min)
+			{
+				min=featureMatrix[j][i];
+			}
+		}
+		diff=max-min;
+		for(int j=0;j<rows;j++)
+		{
+			featureMatrix[j][i]=(featureMatrix[j][i]-min)/diff;
+		}
+	}
+}
 /**	
 * Returns the current distance between dest node and the nextHost node
 * @param dest The destination node 
@@ -449,6 +398,19 @@ private double getDistFor(DTNHost dest,DTNHost nextHost)
 	return dist;
 }
 
+//display matrix (for debugging purposes)
+private void dispMatrix(double[][] featureMatrix,int rows,int columns)
+{
+	for(int i=0;i<rows;i++)
+	{
+		for(int j=0;j<columns;j++)
+		{
+			System.out.print(featureMatrix[i][j]);
+			System.out.print("\t");
+		}
+		System.out.println();
+	}
+}
 	@Override
 	public MessageRouter replicate() {
 		kMeansRouter r = new kMeansRouter(this);

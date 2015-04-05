@@ -234,7 +234,7 @@ public class edMultiRouter extends ActiveRouter{
 
 			Map<DTNHost, Double> bestGammaLocal = new HashMap<DTNHost, Double>();
 
-			DTNHost dest = m.getTo();
+			
 
 			double threshold;
 			int count=0;
