@@ -309,7 +309,7 @@ private Map kMeans(double[][] featureMatrix,int rows,int columns,int k)
 			Map.Entry pair=(Map.Entry)it1.next();
 			if(pair.getValue()-cluster1Mean<min)
 			{
-				c1=pair.getKey()
+				c1=pair.getKey();
 			}
 		}
 		min=Double.POSITIVE_INFINITY;	
@@ -319,7 +319,7 @@ private Map kMeans(double[][] featureMatrix,int rows,int columns,int k)
 			Map.Entry pair=(Map.Entry)it2.next();
 			if(pair.getValue()-cluster2Mean<min)
 			{
-				c2=pair.getKey()
+				c2=pair.getKey();
 			}
 		}
 
@@ -348,7 +348,7 @@ private double euclideanDist(double[][] featureMatrix,int rows,int columns,int i
 	double sum=0;
 	for(int i=0;i<columns;i++)
 	{
-		sum=sum+Math.pow((featureMatrix[index1][i],2);
+		sum=sum+Math.pow((featureMatrix[index1][i]),2);
 	}
 	Math.sqrt(sum);
 }
