@@ -300,6 +300,9 @@ private Map kMeans(double[][] featureMatrix,int rows,int columns,int k)
 
 		//ASSIGNING NEW CENTRES
 		//this can be done faster using a better(sorted) data structure
+
+		//choose just the clusterMean as the next centroid instead of the node closest to it
+
 		double min=Double.POSITIVE_INFINITY;;
 		while(it1.hasNext())
 		{
